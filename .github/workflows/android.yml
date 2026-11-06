@@ -1,0 +1,49 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Függőségek telepítése
+        run: npm install
+
+      - name: Web-tartalom előkészítése
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: Android projekt létrehozása
+        run: npx cap add android
+
+      - name: Engedélyek hozzáadása
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n</manifest>#' "$MANIFEST"
+
+      - name: Szinkronizálás
+        run: npx cap sync android
+
+      - name: Debug APK építése
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elenora-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
