@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#241A35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Elenora</title>
+<style>
+:root{--dk:#241A35;--deep:#38264F;--lav:#B99AE8;--lt:#DCCBFA;--gold:#D5B36A;--cream:#F5EBD9;--wh:#fff;--card:#43305f;--card2:#4d3870}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--dk);color:var(--cream);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+body{display:flex;justify-content:center;background:radial-gradient(circle at 50% 0,#4a3270 0,#241A35 60%)}
+#app{width:100%;max-width:480px;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+header{padding:calc(10px + env(safe-area-inset-top)) 16px 8px;display:flex;align-items:center;gap:10px}
+header h1{margin:0;font-size:20px;letter-spacing:3px;color:var(--lt);font-family:ui-monospace,Consolas,monospace;flex:1}
+header small{display:block;font-size:10px;letter-spacing:1px;color:var(--lav);font-weight:400}
+.iconbtn{background:var(--card);border:1px solid var(--gold);color:var(--gold);border-radius:12px;width:38px;height:38px;font-size:18px}
+main{flex:1;overflow-y:auto;padding:4px 14px 90px;scrollbar-width:none}
+main::-webkit-scrollbar{display:none}
+.screen{display:none}.screen.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid rgba(213,179,106,.35);border-radius:18px;padding:12px 14px;margin:10px 0;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.card h3{margin:0 0 8px;font-size:14px;color:var(--gold);letter-spacing:1px;text-transform:uppercase}
+canvas.pix{image-rendering:pixelated;image-rendering:crisp-edges;width:100%;display:block;border-radius:14px;background:#000}
+.scene{position:relative;border:2px solid var(--gold);border-radius:16px;overflow:hidden}
+.chip{display:inline-block;background:rgba(36,26,53,.8);border:1px solid var(--gold);color:var(--cream);border-radius:20px;padding:3px 10px;font-size:12px}
+.scene .chips{position:absolute;left:8px;top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.bubble{background:var(--cream);color:#2b1d3f;border-radius:16px;border-top-left-radius:4px;padding:10px 12px;font-size:15px;line-height:1.35;position:relative}
+.bubble.me{background:var(--lav);border-radius:16px;border-top-right-radius:4px;margin-left:auto}
+.bubble small{display:block;color:#7a6a96;font-size:11px;margin-top:4px}
+.bar{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+.bar span.l{width:92px;color:var(--lt)}
+.bar .t{flex:1;height:12px;background:#241A35;border-radius:8px;overflow:hidden;border:1px solid #5a447d}
+.bar .f{height:100%;border-radius:8px;transition:width .6s}
+.bar span.v{width:34px;text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button.b,.b{background:linear-gradient(#6b4aa3,#523a86);border:1px solid var(--gold);color:var(--wh);border-radius:14px;padding:11px 10px;font-size:14px;font-weight:600}
+button.b.alt{background:var(--card2)}
+button.b.danger{background:#7a2e4c}
+button.b:active{transform:scale(.97)}
+nav{position:absolute;bottom:0;left:0;right:0;display:flex;background:#1b1328;border-top:2px solid var(--gold);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;background:none;border:none;color:var(--lav);font-size:11px;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button i{font-style:normal;font-size:22px;filter:grayscale(.4)}
+nav button.on{color:var(--gold)}nav button.on i{filter:none;transform:translateY(-2px)}
+.row{display:flex;align-items:center;gap:10px}.grow{flex:1}
+.muted{color:var(--lav);font-size:12px}
+.filters{display:flex;gap:6px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.filters button{white-space:nowrap;background:var(--card);border:1px solid #6a508f;color:var(--lt);border-radius:20px;padding:6px 12px;font-size:13px}
+.filters button.on{background:var(--gold);color:#241A35;border-color:var(--gold);font-weight:700}
+.ev{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed #6a508f}
+.ev:last-child{border:none}
+.ev .tm{width:46px;color:var(--gold);font-size:13px;font-weight:700}
+.ev .ti{font-weight:700;color:var(--wh)}.ev .de{font-size:13px;color:var(--lt)}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:10px;margin-right:4px;background:#241A35;border:1px solid #6a508f;color:var(--lav)}
+.tag.r{border-color:var(--gold);color:var(--gold)}.tag.v{background:var(--gold);color:#241A35;border-color:var(--gold)}
+.day{color:var(--gold);font-weight:700;margin:14px 0 2px;font-size:13px;letter-spacing:1px}
+#chatlog{display:flex;flex-direction:column;gap:8px;max-height:calc(100dvh - 330px);min-height:200px;overflow-y:auto;padding:4px 0}
+.chips2{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chips2 button{background:var(--card2);border:1px solid var(--lav);color:var(--lt);border-radius:16px;padding:6px 10px;font-size:13px}
+input,select,textarea{background:#241A35;border:1px solid #6a508f;color:var(--cream);border-radius:12px;padding:10px;font-size:15px;width:100%;font-family:inherit}
+.send{display:flex;gap:8px}.send button{width:60px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.item{background:var(--card2);border:1px solid #6a508f;border-radius:14px;padding:8px 4px;text-align:center;font-size:12px}
+.item canvas{width:48px;height:48px;image-rendering:pixelated}
+.item .n{color:var(--gold);font-size:11px}
+.item button{margin-top:4px;font-size:12px;padding:6px 8px;width:90%}
+.alarm{display:flex;align-items:center;gap:10px}
+.alarm .time{font-size:30px;font-weight:700;font-family:ui-monospace,Consolas,monospace;color:var(--wh)}
+.days{display:flex;gap:3px;font-size:11px}.days b{opacity:.35;font-weight:600}.days b.on{opacity:1;color:var(--gold)}
+.sw{position:relative;width:48px;height:28px;flex:none}
+.sw input{opacity:0;width:100%;height:100%;position:absolute;margin:0;z-index:2}
+.sw span{position:absolute;inset:0;background:#241A35;border:1px solid #6a508f;border-radius:20px;transition:.2s}
+.sw span:before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--lav);transition:.2s}
+.sw input:checked+span{background:#6b4aa3;border-color:var(--gold)}.sw input:checked+span:before{transform:translateX(20px);background:var(--gold)}
+.modal{position:absolute;inset:0;background:rgba(15,8,25,.8);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.modal>div{width:100%;max-height:90%;overflow-y:auto;background:var(--deep);border:2px solid var(--gold);border-bottom:none;border-radius:22px 22px 0 0;padding:16px;animation:up .25s}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.modal.center{align-items:center}.modal.center>div{border-radius:22px;border-bottom:2px solid var(--gold);width:92%}
+.dpick{display:flex;gap:4px;margin:6px 0}.dpick button{flex:1;padding:8px 0;border-radius:10px;background:#241A35;border:1px solid #6a508f;color:var(--lav);font-size:12px}
+.dpick button.on{background:var(--gold);color:#241A35;font-weight:700}
+.toast{position:absolute;left:50%;top:70px;transform:translateX(-50%);background:var(--cream);color:#2b1d3f;padding:10px 14px;border-radius:14px;z-index:30;max-width:88%;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.5);animation:fade .2s}
+.lbl{font-size:13px;color:var(--lt);margin:10px 0 4px;display:block}
+.note{font-size:12px;color:var(--lav);background:#2f2146;border-left:3px solid var(--gold);padding:6px 8px;border-radius:6px;margin:8px 0}
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #5a447d}
+.set:last-child{border:none}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <canvas id="logo" width="16" height="16" style="width:32px;height:32px;image-rendering:pixelated"></canvas>
+    <h1>ELENORA<small>A Little Life in the Infinite Library</small></h1>
+    <button class="iconbtn" id="btnSettings" title="Beállítások">⚙</button>
+  </header>
+  <main>
+    <!-- OTTHON -->
+    <section class="screen on" id="s-home">
+      <div class="scene">
+        <canvas class="pix" id="scene" width="96" height="72"></canvas>
+        <div class="chips"><span class="chip" id="chLoc"></span><span class="chip" id="chTod"></span></div>
+      </div>
+      <div class="card">
+        <div class="bubble" id="homeMsg"></div>
+        <div style="margin-top:10px" class="row"><span class="chip">Tevékenység</span><b id="homeAct"></b></div>
+      </div>
+      <div class="card" id="homeBars"></div>
+      <div class="btnrow">
+        <button class="b" data-go="chat">💬 Beszélgetés</button>
+        <button class="b" data-go="gifts">🎁 Ajándék</button>
+        <button class="b alt" data-go="journal">📖 Napló</button>
+        <button class="b alt" id="btnStatus">✨ Állapot</button>
+      </div>
+    </section>
+    <!-- CHAT -->
+    <section class="screen" id="s-chat">
+      <div class="card">
+        <div class="row"><h3 style="margin:0" class="grow">Beszélgetés</h3><span class="chip" id="chatMode"></span></div>
+        <div id="chatlog"></div>
+        <div class="chips2" id="chatChips"></div>
+        <form class="send" id="chatForm"><input id="chatIn" placeholder="Írj Elenorának..." autocomplete="off"><button class="b" type="submit">➤</button></form>
+      </div>
+    </section>
+    <!-- NAPLÓ -->
+    <section class="screen" id="s-journal">
+      <div class="filters" id="jFilters"></div>
+      <div class="card" id="jList"></div>
+    </section>
+    <!-- ÉBRESZTŐ -->
+    <section class="screen" id="s-alarm">
+      <div id="alarmList"></div>
+      <button class="b" style="width:100%;margin-top:6px" id="newAlarm">＋ Új ébresztő</button>
+      <div class="note">⚠ HTML-alkalmazásként az ébresztő csak akkor szólal meg, ha az app meg van nyitva (a képernyő be van kapcsolva, az oldal előtérben van). A valódi, zárolt telefonon is csörgő Android-ébresztőhöz a Flutter/AlarmManager változat kell – ez a következő lépés.</div>
+    </section>
+    <!-- GYŰJTEMÉNY -->
+    <section class="screen" id="s-gifts">
+      <div class="card"><h3>Ajándékok</h3><div class="muted" style="margin-bottom:8px">Nem kötelező – csak ha kedved van. Elenora mindennek örül (a chilit leszámítva).</div><div class="grid" id="giftGrid"></div></div>
+      <div class="card"><h3>Eddigi ajándékok</h3><div id="giftHist"></div></div>
+      <div class="card"><h3>Emlékek</h3><div id="memList"></div></div>
+    </section>
+  </main>
+  <nav id="nav">
+    <button data-go="home" class="on"><i>🏠</i>Otthon</button>
+    <button data-go="chat"><i>💬</i>Chat</button>
+    <button data-go="journal"><i>📖</i>Napló</button>
+    <button data-go="alarm"><i>⏰</i>Ébresztő</button>
+    <button data-go="gifts"><i>🎁</i>Gyűjtemény</button>
+  </nav>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   ELENORA – MVP 1.0 (HTML/PWA változat)
+   Szakaszok: 1 Segédek · 2 Adatbázis · 3 Tartalom · 4 Szimuláció
+   5 Grafika · 6 UI · 7 Chat · 8 Napló · 9 Ébresztő · 10 Ajándék
+   11 Beállítások · 12 Indítás
+   ============================================================ */
+
+/* ---------- 1. Segédek ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+let timeOffset=0; const nowMs=()=>Date.now()+timeOffset;
+const hhmm=ms=>{const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const dayKey=ms=>{const d=new Date(ms);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const MONTHS=["jan.","febr.","márc.","ápr.","máj.","jún.","júl.","aug.","szept.","okt.","nov.","dec."];
+const WD=["Vasárnap","Hétfő","Kedd","Szerda","Csütörtök","Péntek","Szombat"];
+const dayLabel=ms=>{const d=new Date(ms);const t=dayKey(nowMs());if(dayKey(ms)===t)return"Ma";if(dayKey(ms)===dayKey(nowMs()-864e5))return"Tegnap";return d.getFullYear()+". "+MONTHS[d.getMonth()]+" "+d.getDate()+". ("+WD[d.getDay()]+")"};
+const ago=ms=>{const m=Math.round((nowMs()-ms)/60000);if(m<1)return"most";if(m<60)return m+" perce";if(m<1440)return Math.round(m/60)+" órája";return Math.round(m/1440)+" napja"};
+function todLabel(ms){const h=new Date(ms).getHours();return h<5?"Éjszaka":h<7?"Hajnal":h<10?"Reggel":h<12?"Délelőtt":h<14?"Dél":h<18?"Délután":h<22?"Este":"Éjszaka"}
+function weighted(list,wf){let t=0;const ws=list.map(x=>{const w=Math.max(0,wf(x));t+=w;return w});let r=Math.random()*t;for(let i=0;i<list.length;i++){r-=ws[i];if(r<=0)return list[i]}return list[list.length-1]}
+
+/* ---------- 2. Adatbázis (localStorage – táblák: state, events, memories, conv, alarms, gifts, settings) ---------- */
+const KEY="elenora_v1";
+const defaults=()=>({v:1,nextId:1,
+  state:{mood:75,energy:80,hunger:30,curiosity:60,social:50,sleep:20,act:null,loc:"room",lastSim:nowMs(),updated:nowMs(),
+    lastMsg:{text:"Szia! Én vagyok Elenora. Itt lakom a Végtelen Könyvtárban. Nézz be bármikor – én addig is élem a kis életemet!",at:nowMs()},override:null,lastNotif:0,lastOpen:0},
+  events:[],memories:[],conv:[],alarms:[],gifts:[],
+  settings:{notifOn:false,notif:"normal",chatMode:"offline",aiEndpoint:"",sound:true,volume:0.6,anim:true,rareMul:"normal",lang:"hu"}});
+let db;
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.v===1){const d=defaults();db={...d,...r,state:{...d.state,...r.state},settings:{...d.settings,...r.settings}};return}}catch(e){}db=defaults()}
+let saveT=null;function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){toast("A mentés nem sikerült (tele a tárhely?)")}}
+const nid=()=>db.nextId++;
+
+/* ---------- 3. Tartalom ---------- */
+const LOCS={room:"Elenora szobája",hall:"Könyvtár főtere",kitchen:"Konyha",garden:"Kert / Üvegház"};
+const CATS={napi:"Mindennapi",tarsas:"Társas",felfedezes:"Felfedezés",kulonleges:"Különleges"};
+const RAR={c:"Gyakori",r:"Ritka",v:"Nagyon ritka"};
+const BASE_W={c:100,r:14,v:2};
+const RARE_MUL={kevesebb:.4,normal:1,tobb:2.5};
+/* A(id,kat,ritkaság,súly,helyszín,[perc],póz,felirat,cím,leírások,üzenetek,hatás,résztvevők,opciók) */
+function A(id,cat,rar,w,loc,m,pose,label,title,d,msg,fx,who,o){return{id,cat,rar,w,loc,m,pose,label,title,d,msg,fx:fx||{},who:who||[],...(o||{})}}
+const ACTS=[
+ A("read","napi","c",12,"room",[30,90],"read","Éppen olvas.","Olvasás",["Elenora egy régi mesekönyvbe merült.","Egy képeskönyvet lapozgatott az ágyán."],["Ez a rész a kedvencem! Egy sárkány épp megtanulta a saját nevét.","Szia! Nézd, találtam egy részt, ami csillog!"],{curiosity:-6,energy:-3,mood:3}),
+ A("draw","napi","c",9,"room",[25,70],"draw","Éppen rajzol.","Rajzolás",["Elenora levendulás rajzot készített.","Egy teknőst rajzolt, kicsit túl nagy fejjel."],["Rajzoltam valamit! Nem tudom, micsoda, de szerintem szép.","Ha lila ceruzával rajzolsz, minden egy kicsit varázslatos."],{curiosity:-3,mood:5,energy:-3}),
+ A("milk","napi","c",6,"kitchen",[10,20],"drink","Éppen tejet iszik.","Tejivás",["Elenora egy nagy pohár tejet ivott a konyhában.","Tej-bajusz nőtt Elenorának."],["Tej! Mindig jó ötlet.","Van bajuszom? Nem baj, így is szép."],{hunger:-20,mood:3},[],{eat:1}),
+ A("choc","napi","c",5,"kitchen",[10,20],"eat","Éppen csokoládét eszik.","Csokoládéevés",["Elenora csokoládét talált a polcon, és megette.","Egy kocka csoki… vagy három."],["Csokoládé! Nem megosztom. Jó, egy kicsit megosztom.","A csoki a legjobb történet, amit meg lehet enni."],{hunger:-22,mood:8},[],{eat:1}),
+ A("cake","napi","c",5,"kitchen",[15,25],"eat","Éppen süteményt eszik.","Süteményevés",["Elenora szeletet vágott egy süteményből.","Sütemény morzsák repkedtek a konyhában."],["Mmm, sütemény! Az összes morzsát megeszem.","Ma süti-nap van. Minden nap süti-nap lehet."],{hunger:-24,mood:8},[],{eat:1}),
+ A("sleep","napi","c",8,"room",[120,420],"sleep","Éppen alszik.","Alvás",["Elenora elaludt az ágyában, és egy lila álmot látott.","Csendesen aludt a szobájában."],["Nem vagyok álmos. Csak becsuktam a szemem egy kicsit.","Álmomban a könyvek repültek!"],{energy:50,sleep:-60,mood:4},[],{sleep:1}),
+ A("nap","napi","c",3,"room",[20,40],"sleep","Szundikál egy kicsit.","Kis szunyókálás",["Elenora szerint ez nem alvás, csak „szem-pihentetés”.","Elenora párnára hajtotta a fejét egy percre."],["Nem aludtam. Csak a szemem pihent. Egyedül.","Hmm? Már reggel van? ...Nem, csak szundi."],{energy:15,sleep:-20},[],{sleep:1,nap:1}),
+ A("play","napi","c",8,"room",[20,60],"joy","Éppen játszik.","Játék",["Elenora építőkockákból tornyot épített, aztán ledöntötte.","Elenora saját szabályú játékot talált ki."],["Új játékot találtam ki! A szabályok minden percben változnak.","Fogócskáztam az árnyékommal. Nyertem."],{mood:8,energy:-6,social:-3}),
+ A("walk","napi","c",9,"hall",[15,45],"walk","Sétál a Könyvtárban.","Séta a Könyvtárban",["Elenora végigsétált a hosszú polcsorok között.","Elenora egy sétát tett a Könyvtár folyosóin."],["A polcok néha suttognak, ha elég csendben vagy.","Ma 143 lépcsőfokot számoltam. Vagy 144-et."],{curiosity:-4,energy:-4,mood:3}),
+ A("shelve","napi","c",6,"hall",[20,50],"walk","Könyveket rendez.","Könyvek rendezése",["Elenora szín szerint rendezte a könyveket.","Elenora visszatett pár eltévedt könyvet a helyére."],["A lila könyvek vannak a legjobb polcon.","Minden könyvnek van helye. Csak néha elbújnak."],{mood:3,energy:-5}),
+ A("turtle","napi","c",6,"garden",[15,40],"curious","Teknősöket nézeget.","Teknősök nézegetése",["Elenora a teknősöket figyelte az üvegházban.","Egy teknős lassan odasétált Elenorához."],["A teknősök sosem sietnek. Szerintem ők tudják a titkot.","Az egyik teknős rám nézett. Értette, amit mondtam."],{curiosity:-5,mood:6}),
+ A("vael","tarsas","c",5,"hall",[20,60],"joy","Vaellel beszélget.","Beszélgetés Vaellel",["Elenora Vaellel beszélgetett a főtéren.","Vael és Elenora együtt ebédelt."],["Vael meglátogatott! Együtt ebédeltünk.","Vael sokat tud. Néha olyan sokat, hogy nem értem."],{social:-25,mood:8},["Vael"]),
+ A("porter","tarsas","c",3,"hall",[15,40],"joy","Porternél látogatóban.","Porter meglátogatása",["Elenora meglátogatta Portert a kapunál.","Porter mesélt Elenorának a kulcsokról."],["Porter szerint minden ajtónak van egy története.","Porter bácsi ma nagyon álmos volt. Ő sem alszik, csak pihen."],{social:-18,mood:6},["Porter"]),
+ A("elowynn","tarsas","c",3,"garden",[20,50],"joy","Elowynnel van.","Elowynn meglátogatása",["Elenora Elowynnel kertészkedett az üvegházban.","Elowynn virágot mutatott Elenorának."],["Elowynn megtanított valamit a levendulákról. Nem árulhatom el!","A kert ma különösen illatos."],{social:-20,mood:7,curiosity:-3},["Elowynn"]),
+ A("jelzo","tarsas","c",4,"room",[15,45],"joy","Jelzőcskével játszik.","Játék Jelzőcskével",["Elenora Jelzőcskével játszott a szobában.","Jelzőcske pislogott, Elenora visszapislogott."],["Jelzőcske ma nagyon fényes volt!","Megint nem értem, mit akar mondani Jelzőcske, de szerintem jó dolgot."],{social:-15,mood:9},["Jelzőcske"]),
+ A("resid","tarsas","c",3,"hall",[20,50],"walk","A Könyvtár lakóit keresi fel.","Könyvtári lakók felkeresése",["Elenora végigjárta a szomszédokat, és mindenkinek köszönt.","Elenora meglátogatott pár könyvtári lakót."],["Mindenkinek más a története. Ezért jó itt lakni.","Ma sok mindenkit megismertem – vagy újra megismertem."],{social:-22,mood:5},["Könyvtári lakók"]),
+ A("findbook","felfedezes","r",4,"hall",[15,40],"surprise","Egy ismeretlen könyvet vizsgál.","Ismeretlen könyv",["Elenora talált egy ismeretlen könyvet, aminek csillogott a borítója.","Egy cím nélküli könyv került elő a polc mögül."],["Szia! Találtam egy érdekes könyvet! A borítója csillog!","Ez a könyv nem volt itt tegnap. Vagy én nem vettem észre?"],{curiosity:-12,mood:6}),
+ A("newroom","felfedezes","r",3,"hall",[20,60],"curious","Új helyiséget fedez fel.","Új helyiség",["Elenora egy eddig ismeretlen kis szobára bukkant.","Egy ajtó, amit még sosem látott, résnyire nyitva állt."],["Volt egy ajtó, amit még sosem láttam! Mögötte… még nem mondom meg.","A Könyvtár mindig nagyobb, mint gondolod."],{curiosity:-15,mood:7,energy:-6}),
+ A("oldstory","felfedezes","r",3,"room",[25,70],"read","Egy régi történetet ismer meg.","Régi történet",["Elenora egy nagyon régi történetet olvasott végig.","Egy megsárgult lapokból álló mesét fedezett fel."],["A történet végén mindenki hazaért. Szeretem az ilyeneket.","Ezt a mesét még senki nem olvasta el… vagy már mindenki?"],{curiosity:-12,mood:6}),
+ A("strange","felfedezes","r",3,"garden",[10,30],"surprise","Egy furcsa tárgyat vizsgál.","Furcsa tárgy",["Elenora furcsa, zizegő tárgyat talált a virágok között.","Egy kis tárgy került elő, amiről senki sem tudja, mire jó."],["Ez a tárgy zizeg! Szerintem él. Vagy majdnem.","Nem tudom, mi ez, de megőrzöm."],{curiosity:-10,mood:5}),
+ A("keeper","kulonleges","v",1.2,"hall",[20,40],"surprise","A Keeperrel találkozik.","Találkozás a Keeperrel",["Elenora találkozott a Keeperrel. A Keeper csak annyit mondott: „Soha ne írd át más történetét.”","A Keeper némán biccentett, Elenora pedig visszabiccentett."],["A Keeper ma megint ugyanazt mondta: soha ne írjuk át más történetét. Én sosem fogom.","Találkoztam a Keeperrel! Nagy a kabátja."],{mood:6,curiosity:-8},["A Keeper"]),
+ A("dark","kulonleges","v",1,"hall",[10,25],"surprise","Valami furcsát hall a mélyből.","A Sötét Könyvtár visszhangja",["Elenora a Sötét Könyvtár felől halk suttogást hallott, és inkább visszafordult.","Egy árnyékos folyosó szélén Elenora megállt, aztán elszaladt."],["Valami suttogott a sötétből. Nem mentem közelebb. Okos voltam, ugye?","A Sötét Könyvtár néha beszél. Én nem válaszolok neki."],{curiosity:-6,mood:-2,energy:-3}),
+ A("unknown","kulonleges","v",1,"room",[20,50],"curious","Egy ismeretlen történet jelenik meg előtte.","Ismeretlen történet",["Elenora szobájában egy lap magától megjelent, rajta egy ismeretlen történet első sorával.","Elenora ismeretlen történetet talált a párnája alatt."],["Egy történet jött hozzám, és nem tudom, kié. Megvárom, míg gazdája lesz.","Ez a történet még nem ért véget. Vagy még el sem kezdődött."],{curiosity:-12,mood:6}),
+ A("visitor","kulonleges","v",0.8,"hall",[20,50],"joy","Ritka látogatóval találkozik.","Ritka látogató érkezett",["Egy ritka látogató érkezett a Könyvtárba, és Elenora körbevezette.","Egy idegen vándor kopogott, Elenora pedig teát hozott neki."],["Látogató érkezett! Nagyon messziről jött. Mutattam neki a teknősöket.","Ritka vendégünk volt. Nem mondta meg a nevét, de nagyon kedves volt."],{social:-25,mood:10},["Ritka látogató"]),
+];
+const ACT=Object.fromEntries(ACTS.map(a=>[a.id,a]));
+
+const ITEMS={
+ milk:{n:"Tej",pose:"drink",fx:{hunger:-10,mood:4},r:"TEJ! Köszönöm! Pont erre vágytam."},
+ choc:{n:"Csokoládé",pose:"eat",fx:{hunger:-12,mood:10},r:"CSOKOLÁDÉ! Köszönöm!"},
+ milkchoc:{n:"Tejcsokoládé",pose:"eat",fx:{hunger:-12,mood:12},r:"Tejcsokoládé?! Ez a legjobb a legjobbak között!"},
+ cake:{n:"Sütemény",pose:"eat",fx:{hunger:-15,mood:9},r:"Sütemény! Félbevágom… jó, mégsem."},
+ lavender:{n:"Levendula",pose:"joy",fx:{mood:12},r:"Levendula! A kedvenc virágom! Szagold meg te is!"},
+ book:{n:"Könyv",pose:"joy",fx:{curiosity:-8,mood:8},r:"Egy új könyv! Remélem, senki nem írta át a történetét."},
+ flower:{n:"Virág",pose:"joy",fx:{mood:8},r:"Milyen szép! Beteszem egy pohár vízbe."},
+ ornament:{n:"Csillogó dísztárgy",pose:"surprise",fx:{curiosity:-6,mood:8},r:"Jaj, de csillog! Megnézem a fényben… tényleg csillog!"},
+ turtle:{n:"Teknősfigura",pose:"joy",fx:{mood:12},r:"Egy kis teknős! Elnevezem… Lapocska. Köszönöm!"},
+};
+const ICONS={ /* 8x8 pixel ikonok */
+ milk:["..kkkk..","..kwwk..",".kkwwkk.",".kwwwwk.",".kwuwwk.",".kwwwwk.",".kwwwwk.","..kkkk.."],
+ choc:["........","kkkkkkkk","kcdcdcdk","kdcdcdck","kcdcdcdk","kdcdcdck","kkkkkkkk","........"],
+ milkchoc:["........","kkkkkkkk","kmnmnmnk","knmnmnmk","kmnmnmnk","knmnmnmk","kkkkkkkk","........"],
+ cake:["...rr...","..kkkk..",".kwwwwk.",".kwpwpk.",".kwwwwk.",".kccccck",".kccccck","..kkkk.."],
+ lavender:["...v....","..vvv...","..vvv...","...vv...","..vvv.g.","...g.g..","...gg...","...g...."],
+ book:[".kkkkkk.","kbbbbbbk","kbyybbbk","kbyybbwk","kbbbbbwk","kbbbbbwk","kkkkkkkk","........"],
+ flower:["..pp.pp.","..pyyp..",".ppyypp.","..pyyp..","...gg...",".g.gg.g.","..gggg..","...gg..."],
+ ornament:["...yy...","..yyyy..",".yywwyy.","yyywyyyy",".yyyyyy.","..yyyy..","...yy...","........"],
+ turtle:["........","..eeee..",".egegeg.","egegegee","eggggggk",".kkkkkk.",".k.kk.k.","........"],
+};
+const PAL={k:"#241A35",w:"#ffffff",u:"#cfe3ff",b:"#7a52c4",y:"#d5b36a",c:"#7b4a2a",d:"#4a2512",m:"#b9763f",n:"#d49a5f",r:"#e0527a",p:"#f2a1c4",v:"#b99ae8",g:"#5fae6b",e:"#3d7f4a"};
+const iconCache={};
+function iconURL(key){if(iconCache[key])return iconCache[key];const c=document.createElement("canvas");c.width=c.height=8;const g=c.getContext("2d");ICONS[key].forEach((row,y)=>[...row].forEach((ch,x)=>{if(ch!=="."){g.fillStyle=PAL[ch];g.fillRect(x,y,1,1)}}));return iconCache[key]=c.toDataURL()}
+
+/* ---------- 4. Szimuláció (időbélyeg-alapú, háttérfolyamat nélkül) ---------- */
+const clampStats=s=>{s.mood=clamp(s.mood,35,100);s.energy=clamp(s.energy,5,100);s.hunger=clamp(s.hunger,0,90);s.curiosity=clamp(s.curiosity,0,100);s.social=clamp(s.social,0,100);s.sleep=clamp(s.sleep,0,100)};
+function chooseAct(at){
+  const h=new Date(at).getHours(),night=h>=22||h<6,st=db.state,rm=RARE_MUL[db.settings.rareMul]||1,last=st.act&&st.act.id;
+  return weighted(ACTS,a=>{
+    let w=a.w*BASE_W[a.rar]; if(a.rar!=="c")w*=rm;
+    if(a.sleep&&!a.nap)w*=night?7:(st.sleep>75?1.5:.05);
+    else if(a.nap)w*=night?.2:(st.sleep>50?2:.6);
+    else if(night)w*=(a.cat==="tarsas"||a.cat==="kulonleges")?.15:.35;
+    if(a.eat&&st.hunger>55)w*=3; if(a.cat==="tarsas"&&st.social>55)w*=2.2;
+    if(a.cat==="felfedezes"&&st.curiosity>60)w*=2; if(a.id===last)w*=.15;
+    return w});
+}
+function startAct(at){
+  const st=db.state,a=chooseAct(at),dur=ri(a.m[0],a.m[1]);
+  st.act={id:a.id,start:at,endsAt:at+dur*60000};st.loc=a.loc;
+}
+function finishAct(act,live){
+  const st=db.state,a=ACT[act.id],dur=(act.endsAt-act.start)/60000;
+  if(a.sleep){st.hunger+=dur*.05}else{st.hunger+=dur*.12;st.energy-=dur*.05;st.sleep+=dur*.06;st.curiosity+=dur*.04;st.social+=dur*.04}
+  for(const k in a.fx){const kk=k==="sleep"?"sleep":k;st[kk]+=a.fx[k]}
+  clampStats(st);
+  const ev={id:nid(),title:a.title,description:pick(a.d),category:a.cat,rarity:a.rar,createdAt:act.endsAt,locationId:a.loc,participants:a.who,activity:a.id};
+  db.events.push(ev); if(db.events.length>800)db.events.splice(0,db.events.length-800);
+  st.lastMsg={text:pick(a.msg),at:act.endsAt};
+  if(a.rar!=="c")db.memories.push({id:nid(),content:ev.description,type:"event",importance:a.rar==="v"?5:3,createdAt:act.endsAt,relatedEventId:ev.id});
+  if(db.memories.length>300)db.memories.splice(0,db.memories.length-300);
+  return ev;
+}
+function simulate(now,live){
+  const st=db.state,made=[];
+  if(!st.act)startAct(now);
+  if(st.act.endsAt<now-14*864e5)st.act.endsAt=now-14*864e5; // max. 14 nap visszamenőleg
+  let g=0;
+  while(st.act.endsAt<=now&&g++<1500){const t=st.act.endsAt;made.push(finishAct(st.act,live));startAct(t)}
+  st.lastSim=Math.max(st.lastSim,now);st.updated=Date.now();
+  if(made.length)maybeNotify(made[made.length-1],live);
+  save();return made;
+}
+
+/* ---------- 5. Grafika (procedurális pixel art) ---------- */
+const C={hair:"#1b1228",skin:"#f8e0cf",bow:"#a06ee8",bow2:"#6f3fc0",dress:"#7b54c8",dress2:"#5a3a9e",lace:"#f5ebd9",gold:"#d5b36a",shoe:"#2e2044"};
+const px=(g,x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),w,h)};
+function srand(s){return()=>(s=(s*16807)%2147483647)/2147483647}
+function heart(g,x,y,c){px(g,x,y,1,1,c);px(g,x+2,y,1,1,c);px(g,x,y+1,3,1,c);px(g,x+1,y+2,1,1,c)}
+function zed(g,x,y){px(g,x,y,3,1,"#dccbfa");px(g,x+1,y+1,1,1,"#dccbfa");px(g,x,y+2,3,1,"#dccbfa")}
+function drawGirl(g,ox,oy,p){
+  const R=(x,y,w,h,c)=>px(g,ox+x,oy+y,w,h,c), pose=p.pose, t=p.t||0;
+  const joy=pose==="joy"||pose==="eat"&&p.happy, sur=pose==="surprise", cur=pose==="curious", sad=pose==="sad";
+  // hátsó haj
+  R(9,7,14,1,C.hair);R(8,8,16,22,C.hair);R(9,30,14,1,C.hair);
+  // lábak
+  const s=p.step||0;
+  if(pose==="walk"){R(13,30,2,s?3:4,C.skin);R(17,30,2,s?4:3,C.skin);R(12,s?33:34,3,2,C.shoe);R(17,s?34:33,3,2,C.shoe)}
+  else{R(13,30,2,4,C.skin);R(17,30,2,4,C.skin);R(12,34,3,2,C.shoe);R(17,34,3,2,C.shoe)}
+  // ruha
+  for(let i=0;i<10;i++){const l=11-Math.floor(i/3),r=20+Math.floor(i/3);R(l,20+i,r-l+1,1,i%4===3?C.dress2:C.dress)}
+  R(8,29,16,1,C.lace);R(14,20,4,1,C.lace);R(11,23,10,1,C.dress2);R(15,22,2,3,C.gold);
+  // nyak, fej
+  R(14,19,4,1,C.skin);R(10,9,12,10,C.skin);
+  // frufru és oldalsó tincsek
+  R(10,9,12,2,C.hair);R(10,11,2,6,C.hair);R(20,11,2,6,C.hair);R(12,11,3,1,C.hair);R(17,11,3,1,C.hair);
+  // szemek
+  const eyeC="#1b1228";
+  if(p.blink&&!joy&&!sur){R(12,15,2,1,eyeC);R(18,15,2,1,eyeC)}
+  else if(joy){R(11,15,1,1,eyeC);R(12,14,2,1,eyeC);R(13,15,1,1,eyeC);R(18,15,1,1,eyeC);R(19,14,2,1,eyeC);R(20,15,1,1,eyeC)}
+  else if(sur){R(11,12,3,4,"#fff");R(17,12,3,4,"#fff");R(12,13,2,3,eyeC);R(18,13,2,3,eyeC)}
+  else{R(12,13,2,3,eyeC);R(18,13,2,3,eyeC);R(12,13,1,1,"#fff");R(18,13,1,1,"#fff")}
+  if(cur)R(17,11,4,1,C.hair); // fél szemöldök
+  R(11,16,1,1,"#f4a6b8");R(20,16,1,1,"#f4a6b8"); // pír
+  // száj
+  if(joy||pose==="eat"&&false)R(15,17,2,2,"#b24a5e");
+  else if(sur)R(15,17,2,2,"#7a2a3a");
+  else if(sad){R(15,18,2,1,"#c86a7a");R(14,19,1,1,"#c86a7a");R(17,19,1,1,"#c86a7a")}
+  else if(cur)R(16,17,2,1,"#c86a7a");
+  else{R(15,17,2,1,"#c86a7a");R(14,16,1,1,"#c86a7a");R(17,16,1,1,"#c86a7a")}
+  // masni
+  R(8,4,6,5,C.bow);R(18,4,6,5,C.bow);R(9,5,3,2,"#c9a5f5");R(20,5,3,2,"#c9a5f5");R(14,5,4,4,C.bow2);R(8,8,6,1,C.bow2);R(18,8,6,1,C.bow2);
+  // karok / kellékek
+  const sw=pose==="walk"?(s?1:-1):0;
+  const armsDown=()=>{R(8,21,3,5,C.dress);R(8,26+sw,3,2,C.skin);R(21,21,3,5,C.dress);R(21,26-sw,3,2,C.skin)};
+  if(pose==="read"){R(8,21,3,5,C.dress);R(21,21,3,5,C.dress);R(9,22,14,8,"#3d2a6b");R(10,23,12,6,"#4b3685");R(15,25,2,2,C.gold);R(8,26,3,2,C.skin);R(21,26,3,2,C.skin)}
+  else if(pose==="draw"){R(8,21,3,5,C.dress);R(8,26,3,2,C.skin);R(21,21,3,5,C.dress);R(18,25,5,2,C.skin);R(19,27,9,4,"#fff");R(20,28,3+(t%4),1,"#b99ae8");R(20,30,2+((t+2)%4),1,"#d5b36a");R(16,22,1,5,C.gold);R(16,21,1,1,"#f4a6b8")}
+  else if(pose==="drink"){R(8,21,3,5,C.dress);R(8,26,3,2,C.skin);R(21,19,3,4,C.dress);R(19,17,5,6,"#fff");R(20,18,3,2,"#e4ecff");R(19,17,5,1,"#cfe3ff");R(23,19,2,3,"#fff");R(20,22,3,2,C.skin)}
+  else if(pose==="eat"){R(8,21,3,5,C.dress);R(8,26,3,2,C.skin);R(21,19,3,4,C.dress);R(18,17,5,3,"#6b3a1f");R(19,18,1,1,"#4a2512");R(21,18,1,1,"#4a2512");R(21,20,3,2,C.skin)}
+  else if(joy){const up=(t%2)*1;R(6,14-up,3,2,C.skin);R(7,16-up,3,6,C.dress);R(25,14-up,3,2,C.skin);R(22,16-up,3,6,C.dress)}
+  else if(sur){R(6,19,3,3,C.dress);R(5,17,2,2,C.skin);R(23,19,3,3,C.dress);R(25,17,2,2,C.skin)}
+  else armsDown();
+  // jelek
+  if(joy&&p.hearts!==false){const o=(t%6);heart(g,ox+25,oy+6-(o>>1),"#ff7fa8");heart(g,ox+3,oy+10-(o>>1),"#ff9fc0")}
+  if(sur){R(26,0,2,5,"#d5b36a");R(26,6,2,2,"#d5b36a")}
+  if(cur){const o=t%4<2?0:1;R(25,2+o,3,1,"#d5b36a");R(27,3+o,1,2,"#d5b36a");R(26,5+o,1,1,"#d5b36a");R(26,7+o,1,1,"#d5b36a")}
+  if(sad)R(12,17,1,2,"#8ec5ff");
+}
+function drawSleeper(g,ox,oy,t){
+  const R=(x,y,w,h,c)=>px(g,ox+x,oy+y,w,h,c);
+  R(0,8,15,5,"#f5ebd9");R(2,1,14,9,C.hair);R(4,3,9,7,C.skin);R(4,3,9,2,C.hair);
+  R(5,6,2,1,"#1b1228");R(10,6,2,1,"#1b1228");R(8,8,2,1,"#c86a7a");R(5,7,1,1,"#f4a6b8");R(11,7,1,1,"#f4a6b8");
+  R(0,0,4,3,C.bow);R(5,0,4,3,C.bow);R(4,0,1,3,C.bow2);
+  R(12,5,22,8,C.dress);R(12,5,22,2,"#9d7be0");for(let i=0;i<5;i++)R(15+i*4,8,2,1,C.dress2);
+  const b=Math.floor(t/3)%3;zed(g,ox+20,oy-6-b);if(b>0)zed(g,ox+26,oy-12-b);
+}
+function drawBG(g,loc,t){
+  const W=96,R=(x,y,w,h,c)=>px(g,x,y,w,h,c),tw=Math.floor(t/4)%2;
+  if(loc==="room"){
+    R(0,0,W,52,"#38264f");for(let x=0;x<W;x+=8)R(x,0,1,52,"#41305b");R(0,48,W,4,"#2c1d40");
+    R(0,52,W,20,"#2a1c3d");for(const y of[56,60,64,68])R(0,y,W,1,"#221633");
+    R(62,8,24,28,"#d5b36a");R(64,10,20,24,"#1d2760");R(73,10,2,24,"#d5b36a");R(64,21,20,2,"#d5b36a");
+    R(68,14,6,6,"#f5ebd9");R(71,13,5,5,"#1d2760");
+    [[66,12],[78,16],[67,28],[80,30],[77,12]].forEach(([x,y],i)=>R(x,y,1,1,(i+tw)%2?"#fff":"#8a8fd0"));
+    R(2,42,46,22,"#5b3d2a");R(4,44,42,16,"#d9c9f0");R(4,52,42,8,"#7b54c8");R(4,52,42,2,"#9d7be0");R(2,38,3,26,"#6b4b33");R(44,40,3,24,"#6b4b33");
+    R(54,50,3,14,"#6b4b33");R(52,44,8,6,"#d5b36a");R(53,45,6,4,tw?"#fff1c0":"#ffe08a");
+    R(50,66,40,4,"#6a3fb0");R(54,68,32,2,"#7b54c8");
+    R(86,40,8,24,"#5b3d2a");for(let i=0;i<4;i++){R(87,42+i*6,6,5,["#b99ae8","#d5b36a","#e0527a","#7bd88f"][i])}
+  }else if(loc==="hall"){
+    R(0,0,W,52,"#2f2145");R(0,52,W,20,"#3b2a55");R(30,52,36,20,"#6a2f5e");R(32,52,32,20,"#7e3a70");R(30,52,36,1,"#d5b36a");
+    const rnd=srand(7),cols=["#b99ae8","#d5b36a","#e0527a","#7bd88f","#6fa8e8","#f5ebd9","#7a52c4"];
+    for(const bx of[0,74]){R(bx,2,22,50,"#5b3d2a");for(let r=0;r<5;r++){R(bx+1,4+r*10,20,9,"#241a35");for(let x=0;x<19;x+=2){const h=5+Math.floor(rnd()*4);R(bx+1+x,13+r*10-h,2,h,cols[Math.floor(rnd()*cols.length)])}}}
+    R(30,6,36,40,"#241a35");R(32,8,32,38,"#1f2a63");R(46,8,4,38,"#d5b36a");R(32,24,32,3,"#d5b36a");
+    R(47,0,2,8,"#d5b36a");R(38,8,20,2,"#d5b36a");[38,46,54,56].forEach((x,i)=>{R(x,5,2,3,"#f5ebd9");R(x,3-(i+tw)%2,2,2,"#ffcf5a")});
+  }else if(loc==="kitchen"){
+    R(0,0,W,52,"#46304f");for(let y=0;y<52;y+=8)for(let x=((y/8)%2)*4;x<W;x+=8)R(x,y,7,7,"#4f3759");
+    R(0,52,W,20,"#2a1c3d");for(let x=0;x<W;x+=8)for(let y=52;y<72;y+=8)if(((x+y)/8)%2)R(x,y,8,8,"#33234a");
+    R(4,12,34,3,"#6b4b33");R(4,28,34,3,"#6b4b33");[["#7bd88f",6],["#f2a1c4",14],["#d5b36a",22],["#b99ae8",30]].forEach(([c,x])=>{R(x,5,6,7,c);R(x,3,6,2,"#f5ebd9");R(x,21,6,7,c);R(x,19,6,2,"#f5ebd9")});
+    R(58,10,30,22,"#241a35");R(60,12,26,18,"#d5b36a");R(62,14,22,14,"#38264f");
+    R(34,62,28,5,"#6b4b33");R(36,60+tw,3,3,"#ff9a3a");R(44,59-tw,3,4,"#ffcf5a");R(52,60+tw,3,3,"#ff9a3a");
+    R(32,40,32,18,"#1b1228");R(30,38,36,4,"#3a2f4a");R(34,42,28,3,"#7bd88f");[38,46,54].forEach((x,i)=>R(x,38-((t+i*3)%6),2,2,"#a8f5b8"));
+  }else{
+    R(0,0,W,52,"#2b3a5e");for(let x=0;x<W;x+=16)R(x,0,1,52,"#d5b36a");for(let y=0;y<52;y+=13)R(0,y,W,1,"#d5b36a");
+    R(0,0,W,12,"#3a4d7a");R(56,6,10,6,"#fff5d0");
+    R(0,52,W,20,"#4a3320");R(34,52,28,20,"#6b5a45");
+    for(let r=0;r<2;r++)for(let x=2+r*3;x<92;x+=6){if(x>30&&x<66&&r===0)continue;const y=38+r*14,sw=Math.floor(Math.sin(t/3+x)*1);R(x,y+8,1,10,"#3d7f4a");R(x-1+sw,y,3,10,"#b99ae8");R(x+sw,y-2,1,3,"#dccbfa")}
+    [[10,20],[84,24],[50,14],[30,30]].forEach(([x,y],i)=>{if((i+t)%5<1)R(x,y,1,1,"#fff")});
+  }
+}
+function pickPose(){
+  const st=db.state,ov=st.override;
+  if(ov&&ov.until>Date.now())return ov.pose;
+  return ACT[st.act.id].pose;
+}
+let frame=0,lastFrame=0,blinkAt=0;
+function renderScene(canvas,loc,pose,tick,opts){
+  const g=canvas.getContext("2d");g.imageSmoothingEnabled=false;
+  drawBG(g,loc,tick);
+  if(pose==="sleep"&&loc==="room"){drawSleeper(g,10,46,tick);return}
+  const bob=db.settings.anim&&pose!=="walk"?Math.round(Math.sin(tick/2.2)*0.6):0;
+  const blink=(tick%14===0);
+  let x=32;
+  if(pose==="walk"&&db.settings.anim){const px_=Math.sin(tick/9)*22+32,dir=Math.cos(tick/9)>=0?1:-1;x=px_;
+    if(dir<0){g.save();g.translate(x+32,0);g.scale(-1,1);drawGirl(g,0,30,{pose,blink,step:tick%2,t:tick});g.restore();return}}
+  else if(pose==="walk")x=32;
+  // árnyék
+  px(g,x+9,66,14,2,"rgba(0,0,0,.3)");
+  drawGirl(g,x,30+bob,{pose,blink,step:tick%2,t:tick,happy:true});
+}
+function drawLogo(){const c=$("#logo"),g=c.getContext("2d");g.imageSmoothingEnabled=false;px(g,0,0,16,16,"#38264f");
+  const Rr=(x,y,w,h,col)=>px(g,x,y,w,h,col);Rr(2,6,12,10,C.hair);Rr(4,7,8,6,C.skin);Rr(4,7,8,1,C.hair);Rr(6,10,1,2,"#1b1228");Rr(9,10,1,2,"#1b1228");Rr(7,13,2,1,"#c86a7a");Rr(1,2,5,4,C.bow);Rr(10,2,5,4,C.bow);Rr(6,3,4,3,C.bow2)}
+
+/* ---------- 6. UI alapok ---------- */
+let cur="home";
+function go(s){
+  cur=s;$$(".screen").forEach(e=>e.classList.toggle("on",e.id==="s-"+s));
+  $$("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===s));
+  $("main").scrollTop=0;render();
+}
+function toast(msg,ms=2800){const t=document.createElement("div");t.className="toast";t.textContent=msg;$("#app").appendChild(t);setTimeout(()=>t.remove(),ms)}
+function modal(html,center){const m=document.createElement("div");m.className="modal"+(center?" center":"");m.innerHTML="<div>"+html+"</div>";m.addEventListener("click",e=>{if(e.target===m)m.remove()});$("#app").appendChild(m);return m}
+const closeModals=()=>$$(".modal").forEach(m=>m.remove());
+function bar(label,v,color){return`<div class="bar"><span class="l">${label}</span><div class="t"><div class="f" style="width:${Math.round(v)}%;background:${color}"></div></div><span class="v">${Math.round(v)}</span></div>`}
+function bars(full){const s=db.state;
+  return bar("💜 Hangulat",s.mood,"#f2a1c4")+bar("⚡ Energia",s.energy,"#d5b36a")+bar("🍪 Éhség",s.hunger,"#e08a5a")+bar("🔍 Kíváncsiság",s.curiosity,"#7bd88f")+bar("👥 Társas kedv",s.social,"#6fa8e8")+(full?bar("🌙 Alvásigény",s.sleep,"#b99ae8"):"")}
+
+function render(){
+  const st=db.state;
+  if(cur==="home"){
+    $("#chLoc").textContent="📍 "+LOCS[st.loc];$("#chTod").textContent="🕐 "+todLabel(nowMs())+" · "+hhmm(nowMs());
+    const ov=st.override&&st.override.until>Date.now();
+    $("#homeMsg").innerHTML=esc(st.lastMsg.text)+`<small>Elenora · ${ago(st.lastMsg.at)}</small>`;
+    $("#homeAct").textContent=ov?"Épp ajándékot csodál.":ACT[st.act.id].label;
+    $("#homeBars").innerHTML=`<h3>Állapot</h3>`+bars(false);
+  }
+  if(cur==="chat")renderChat();
+  if(cur==="journal")renderJournal();
+  if(cur==="alarm")renderAlarms();
+  if(cur==="gifts")renderGifts();
+}
+function loop(ts){
+  if(ts-lastFrame>140){lastFrame=ts;frame++;
+    if(cur==="home")renderScene($("#scene"),db.state.loc,pickPose(),frame);}
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 7. Chat ---------- */
+const CHIPS=["Szia!","Mit csinálsz?","Mi történt ma?","Mesélj valamit!","Mi a kedvenc könyved?","Mi a Végtelen Könyvtár?","Szeretsz tejet inni?","Mit eszel szívesen?"];
+function lastEventsToday(n){const k=dayKey(nowMs());return db.events.filter(e=>dayKey(e.createdAt)===k).slice(-n)}
+const REPLIES=[
+ [/^(szia|hell?ó|szió|csá|jó (reggelt|napot|estét)|hali)/,()=>["Szia! Ma már "+(db.events.length?"csináltam is egy-két dolgot.":"minden új.")+" ♡","Szia, szia! Pont rád gondoltam. Vagy a teknősökre. Vagy mindkettőre.","Hello! Gyere, mesélj valamit!"]],
+ [/mit csinálsz|mit csinál|mivel foglalkozol/,()=>{const a=ACT[db.state.act.id];return[a.label+" "+pick(a.msg)]}],
+ [/mi történt|mi volt ma|mesélj (a )?napról|mi újság/,()=>{const e=lastEventsToday(3);return[e.length?"Ma ezeket csináltam: "+e.map(x=>x.title.toLowerCase()).join(", ")+". A naplóban mindent megtalálsz!":"Ma még alig történt valami. De a nap hosszú!"]}],
+ [/mesélj|mondj valamit|történet/,()=>["A Végtelen Könyvtárban minden könyvnek van egy hangja. Ha elég csendben vagy, hallod, ahogy a lapok álmodnak.","Egyszer találtam egy könyvet, ami csak egy mondatot tartalmazott: „Soha ne írd át más történetét.” Azóta is ezen gondolkodom.","Tudtad, hogy a teknősök lassúak, mert minden lépésnél elolvasnak egy sort a földből?"]],
+ [/kedvenc könyv|milyen könyv|mit olvasol/,()=>["A kedvenc könyvem ami lila és csillog. A címét nem tudom, mert minden nap más.","Most egy sárkányos mesét szeretek. A sárkány nem rossz, csak magányos."]],
+ [/végtelen könyvtár|hol vagy|hol élsz|könyvtár/,()=>["A Végtelen Könyvtárban lakom! Nincs vége, de van konyhája, kertje és sok-sok polca. A szabály egyszerű: soha ne írd át más történetét.","Ez egy hely, ahol minden történet otthon van. Én a szobámban lakom a főtér mellett."]],
+ [/tej/,()=>["Tej! A tej nagyon jó. Meleg is, hideg is. Főleg ha csokival keveri valaki.","Szeretem a tejet! Van bajuszom most? Nézd meg!"]],
+ [/csoki|csokol/,()=>["CSOKOLÁDÉ?! Hol? Ki hozta? Én is szeretnék.","A csoki a második kedvenc dolgom a levendula után. Vagy az első. Függ a naptól."]],
+ [/levendul/,()=>["A levendula a kedvenc virágom! Lila és illatos, mint egy jó álom.","Elowynn mindig ad egy ágat. Beteszem a könyveim közé."]],
+ [/chili|csíp|erős pap/,()=>["Bleh! A chili csíp. Nem szeretem. Még a gondolatát sem.","A chili olyan, mint egy dühös sárkány a szádban. Nem, köszönöm!"]],
+ [/csirke|zöldség|eszel|kaja|étel|éhes/,()=>["Szeretem a csirkét, a zöldségeket, a tejet, a süteményeket és a csokit. A chilit nem!","Hmm, enni… mindig lehet! Főleg süteményt."]],
+ [/vael/,()=>["Vael nagyon okos. Néha annyit mond, hogy elfelejtem a végét, de szeretem hallgatni."]],
+ [/porter/,()=>["Porter a kapunál áll és vigyáz a kulcsokra. Szerintem ő tudja, merre van minden."]],
+ [/elowynn/,()=>["Elowynn a kert gazdája. Mindig levendula-illata van!"]],
+ [/jelzőcske|jelzocske/,()=>["Jelzőcske pislog, én meg visszapislogok. Így beszélgetünk."]],
+ [/keeper/,()=>["A Keeper nagyon komoly. Csak annyit mond: soha ne írd át más történetét. És igaza van."]],
+ [/alszol|álmos|aludni|alvás/,()=>["Nem kell aludnom, de néha szeretek. Az álmok olyanok, mint a kis ablakok a könyvekben.","Nem vagyok álmos. Csak becsuktam a szemem egy kicsit."]],
+ [/rajz/,()=>["Rajzoltam egy teknőst! A feje kicsit nagy lett, de szerintem ettől cuki."]],
+ [/hogy vagy|hogy érzed/,()=>{const s=db.state;return[s.mood>70?"Nagyon jól vagyok! Szinte csillogok.":"Hmm, olyan átlagos vagyok. De egy süti segítene! 🍪"]}],
+ [/szeretlek|kedves vagy|cuki|aranyos|jó vagy/,()=>["Jaj! Nem tudom pontosan, mit érzek, de olyan, mint amikor a levendula illata betölti a szobát.","Köszönöm! Én is örülök, hogy itt vagy. Vagy hogy… hogy nézel."]],
+ [/köszi|köszönöm/,()=>["Szívesen! Vagy nem is tudom, mit csináltam, de szívesen."]],
+ [/viszl|szia szia|jó éjt|pá/,()=>["Pá! Jó éjszakát! Én majd olvasgatok még egy kicsit.","Viszlát! Én addig is élem a kis életemet."]],
+];
+const FALLBACK=["Hmm… ezt még egyszer elmondod? Közben egy betű leugrott a lapról.","Nem egészen értem, de úgy hangzik, mint egy jó történet!","Az emberek néha furcsa dolgokat mondanak. Szeretem!","Ezt felírom a könyvembe. Majd később megértem.","Hú, ez nagy kérdés! Megkérdezem a teknősöket.","Mmm… lehet. Vagy talán nem. A Könyvtárban mindkettő igaz lehet."];
+function offlineReply(txt){
+  const t=txt.toLowerCase().trim();
+  for(const[re,fn]of REPLIES)if(re.test(t))return pick(fn());
+  return pick(FALLBACK);
+}
+function buildAIContext(msg){
+  const s=db.state,rel=db.memories.slice().sort((a,b)=>b.importance-a.importance||b.createdAt-a.createdAt).slice(0,5).map(m=>m.content);
+  return{system:"Te Elenora vagy, egy kb. 8 éves kislány a Végtelen Könyvtárban: gyermeki, kíváncsi, kedves, néha furcsa. Nem érted teljesen az emberi érzelmeket. Szereted az olvasást, rajzolást, tejet, csokit, süteményt, csirkét, zöldséget; kedvenc virágod a levendula; nem szereted a chilit. Nem asszisztens vagy. Alapszabály: „Soha ne írd át más történetét.” Ne találj ki a kánonnak ellentmondó dolgokat. Magyarul, röviden (1-3 mondat) válaszolj.",
+    state:{mood:s.mood,energy:s.energy,hunger:s.hunger,curiosity:s.curiosity,social:s.social,activity:ACT[s.act.id].label,location:LOCS[s.loc],timeOfDay:todLabel(nowMs())},
+    recentEvents:db.events.slice(-5).map(e=>e.title+": "+e.description),memories:rel,
+    history:db.conv.slice(-8).map(c=>({role:c.role,content:c.content})),message:msg};
+}
+async function elenoraReply(txt){
+  const set=db.settings;
+  if(set.chatMode==="ai"&&set.aiEndpoint&&navigator.onLine){
+    try{const r=await fetch(set.aiEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(buildAIContext(txt))});
+      if(r.ok){const j=await r.json();if(j&&j.reply)return{text:String(j.reply),mode:"ai"}}}catch(e){}
+    return{text:offlineReply(txt),mode:"offline",fallback:true};
+  }
+  return{text:offlineReply(txt),mode:"offline"};
+}
+function addConv(role,content,mode){db.conv.push({id:nid(),role,content,createdAt:nowMs(),mode});if(db.conv.length>400)db.conv.splice(0,db.conv.length-400)}
+function renderChat(){
+  const s=db.settings;
+  $("#chatMode").textContent=s.chatMode==="ai"&&s.aiEndpoint&&navigator.onLine?"🌐 AI mód":"📴 Offline mód";
+  const log=$("#chatlog");
+  if(!db.conv.length)log.innerHTML=`<div class="bubble">Szia! Kérdezz bármit, vagy válassz egy gyors választ lent! ♡</div>`;
+  else log.innerHTML=db.conv.slice(-60).map(c=>`<div class="bubble ${c.role==="user"?"me":""}" style="max-width:88%">${esc(c.content)}<small>${hhmm(c.createdAt)}${c.mode==="ai"&&c.role!=="user"?" · AI":""}</small></div>`).join("");
+  log.scrollTop=log.scrollHeight;
+  const chips=[...CHIPS].sort(()=>Math.random()-.5).slice(0,5);
+  $("#chatChips").innerHTML=chips.map(c=>`<button data-chip="${esc(c)}">${esc(c)}</button>`).join("");
+}
+async function sendChat(txt){
+  txt=txt.trim();if(!txt)return;
+  addConv("user",txt,"offline");renderChat();
+  const log=$("#chatlog");const tp=document.createElement("div");tp.className="bubble";tp.textContent="…";log.appendChild(tp);log.scrollTop=log.scrollHeight;
+  const[r]=await Promise.all([elenoraReply(txt),new Promise(r=>setTimeout(r,450+Math.random()*500))]);
+  if(r.fallback)toast("Az AI nem érhető el – Elenora offline módban válaszol.");
+  addConv("elenora",r.text,r.mode);
+  if(/(a nevem|hívnak)\s+(\S+)/i.test(txt)){const m=txt.match(/(a nevem|hívnak)\s+(\S+)/i);db.memories.push({id:nid(),content:"A felhasználó neve: "+m[2],type:"user",importance:5,createdAt:nowMs()})}
+  save();if(cur==="chat")renderChat();
+}
+
+/* ---------- 8. Napló ---------- */
+let jFilter="all";
+const JF=[["all","Összes"],["napi","Mindennapi"],["tarsas","Társas"],["felfedezes","Felfedezések"],["rare","Ritka"],["kulonleges","Különleges"]];
+function renderJournal(){
+  $("#jFilters").innerHTML=JF.map(([k,l])=>`<button data-jf="${k}" class="${jFilter===k?"on":""}">${l}</button>`).join("");
+  let list=db.events.slice().reverse().filter(e=>jFilter==="all"?true:jFilter==="rare"?e.rarity!=="c":e.category===jFilter);
+  if(!list.length){$("#jList").innerHTML=`<div class="muted">Még nincs ilyen esemény. Elenora nemsokára történeteket gyűjt ide!</div>`;return}
+  let html="",last="",n=0;
+  for(const e of list){if(++n>150)break;const dl=dayLabel(e.createdAt);if(dl!==last){html+=`<div class="day">${dl}</div>`;last=dl}
+    html+=`<div class="ev"><div class="tm">${hhmm(e.createdAt)}</div><div class="grow"><div class="ti">${esc(e.title)}</div><div class="de">${esc(e.description)}</div>
+    <div style="margin-top:4px"><span class="tag">📍 ${LOCS[e.locationId]}</span><span class="tag">${CATS[e.category]}</span><span class="tag ${e.rarity}">${RAR[e.rarity]}</span>${e.participants&&e.participants.length?`<span class="tag">👥 ${esc(e.participants.join(", "))}</span>`:""}</div></div></div>`}
+  $("#jList").innerHTML=html;
+}
+
+/* ---------- 9. Ébresztő (megnyitott app esetén – lásd megjegyzés) ---------- */
+const DN=["H","K","Sz","Cs","P","Szo","V"];
+const ALARM_MSGS={morning:["Jó reggelt! Már vártalak! ♡","Kelj fel, a könyvek már ébren vannak!","Jó reggelt! Reggel van, a tej is megvan."],random:["Hé! Találtam valamit, nézd meg!","A teknősök azt üzenik: ideje felkelni!","Egy sárkány épp most ébredt fel. Te is?","Pssszt… a levendula azt súgja: ébresztő!"]};
+const SOUNDS={bell:"Csengettyű",harp:"Hárfa",beep:"Csipogó"};
+let actx=null;
+function playSound(kind,once){
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const g=actx.createGain();g.gain.value=db.settings.volume*.5;g.connect(actx.destination);
+    const seq={bell:[880,1320,880,1320,1760],harp:[523,659,784,1047,784,659],beep:[1000,0,1000,0,1000]}[kind]||[880];
+    seq.forEach((f,i)=>{if(!f)return;const o=actx.createOscillator(),e=actx.createGain();o.type=kind==="beep"?"square":"sine";o.frequency.value=f;e.gain.setValueAtTime(0,actx.currentTime+i*.22);e.gain.linearRampToValueAtTime(1,actx.currentTime+i*.22+.02);e.gain.exponentialRampToValueAtTime(.001,actx.currentTime+i*.22+.5);o.connect(e);e.connect(g);o.start(actx.currentTime+i*.22);o.stop(actx.currentTime+i*.22+.55)})}catch(e){}
+}
+function renderAlarms(){
+  const L=$("#alarmList");
+  if(!db.alarms.length){L.innerHTML=`<div class="card muted">Még nincs ébresztőd. Adj hozzá egyet lent!</div>`;return}
+  L.innerHTML=db.alarms.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(a=>`<div class="card alarm" data-aid="${a.id}">
+    <div class="grow" data-edit="${a.id}"><div class="time">${a.time}</div>
+    <div class="days">${a.repeatDays.length?DN.map((d,i)=>`<b class="${a.repeatDays.includes(i)?"on":""}">${d}</b>`).join(""):"<b class='on'>Egyszeri</b>"}</div>
+    <div class="muted">${a.messageType==="custom"?esc(a.custom||"Egyéni üzenet"):a.messageType==="random"?"Véletlen Elenora-üzenet":"Reggeli köszöntő"} · ${SOUNDS[a.soundId]}</div></div>
+    <label class="sw"><input type="checkbox" data-tog="${a.id}" ${a.enabled?"checked":""}><span></span></label></div>`).join("");
+}
+function alarmForm(a){
+  const isNew=!a;a=a||{id:0,time:"07:00",repeatDays:[0,1,2,3,4],enabled:true,messageType:"morning",custom:"",soundId:"bell"};
+  const days=new Set(a.repeatDays);
+  const m=modal(`<h3 style="margin-top:0;color:var(--gold)">${isNew?"Új ébresztő":"Ébresztő szerkesztése"}</h3>
+    <label class="lbl">Időpont</label><input type="time" id="aTime" value="${a.time}">
+    <label class="lbl">Napok (ha egyik sincs kijelölve: egyszeri)</label>
+    <div class="dpick" id="aDays">${DN.map((d,i)=>`<button type="button" data-d="${i}" class="${days.has(i)?"on":""}">${d}</button>`).join("")}</div>
+    <label class="lbl">Üzenet</label>
+    <select id="aMsg"><option value="morning">Reggeli köszöntő</option><option value="random">Véletlen Elenora-üzenet</option><option value="custom">Egyéni szöveg</option></select>
+    <input id="aCustom" placeholder="Saját üzenet..." style="margin-top:6px;display:none" value="${esc(a.custom||"")}">
+    <label class="lbl">Hang</label>
+    <div class="row"><select id="aSnd" class="grow">${Object.entries(SOUNDS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select><button type="button" class="b alt" id="aPrev">▶</button></div>
+    <div class="btnrow" style="margin-top:14px"><button class="b" id="aSave">Mentés</button>${isNew?`<button class="b alt" id="aCancel">Mégse</button>`:`<button class="b danger" id="aDel">Törlés</button>`}</div>`);
+  m.querySelector("#aMsg").value=a.messageType;m.querySelector("#aSnd").value=a.soundId;
+  const upd=()=>m.querySelector("#aCustom").style.display=m.querySelector("#aMsg").value==="custom"?"block":"none";upd();
+  m.querySelector("#aMsg").onchange=upd;
+  m.querySelectorAll("#aDays button").forEach(b=>b.onclick=()=>{b.classList.toggle("on");const d=+b.dataset.d;days.has(d)?days.delete(d):days.add(d)});
+  m.querySelector("#aPrev").onclick=()=>playSound(m.querySelector("#aSnd").value);
+  m.querySelector("#aSave").onclick=()=>{
+    const o={id:a.id||nid(),time:m.querySelector("#aTime").value||"07:00",repeatDays:[...days].sort(),enabled:true,messageType:m.querySelector("#aMsg").value,custom:m.querySelector("#aCustom").value.trim(),soundId:m.querySelector("#aSnd").value,lastFired:"",snoozeUntil:0};
+    if(isNew)db.alarms.push(o);else Object.assign(db.alarms.find(x=>x.id===a.id),o,{enabled:a.enabled});
+    save();m.remove();renderAlarms();toast("Ébresztő elmentve ⏰");
+    if(isNative)syncNative();else askNotifIfNeeded();
+  };
+  if(isNew)m.querySelector("#aCancel").onclick=()=>m.remove();
+  else m.querySelector("#aDel").onclick=()=>{db.alarms=db.alarms.filter(x=>x.id!==a.id);save();m.remove();renderAlarms();syncNative()};
+}
+let ringing=null,ringTimer=null;
+function checkAlarms(){
+  const d=new Date(nowMs()),key=dayKey(nowMs())+" "+hhmm(nowMs()),wd=(d.getDay()+6)%7;
+  if(ringing)return;
+  for(const a of db.alarms){
+    if(!a.enabled)continue;
+    if(a.snoozeUntil&&nowMs()>=a.snoozeUntil){a.snoozeUntil=0;ring(a);return}
+    if(a.time===hhmm(nowMs())&&a.lastFired!==key&&(!a.repeatDays.length||a.repeatDays.includes(wd))){
+      a.lastFired=key;if(!a.repeatDays.length)a.enabled=false;save();ring(a);return}
+  }
+}
+function ring(a){
+  ringing=a;const text=a.messageType==="custom"&&a.custom?a.custom:pick(ALARM_MSGS[a.messageType==="random"?"random":"morning"]);
+  db.state.lastMsg={text,at:nowMs()};
+  const m=modal(`<div style="text-align:center"><canvas class="pix" id="ringC" width="96" height="72" style="margin-bottom:10px"></canvas><div style="font-size:34px;font-weight:700;color:var(--gold)">${a.time}</div><div class="bubble" style="margin:10px 0;text-align:left">${esc(text)}</div>
+    <div class="btnrow"><button class="b alt" id="rSnooze">😴 Szundi (5 perc)</button><button class="b" id="rStop">Leállítás</button></div></div>`,true);
+  const rc=m.querySelector("#ringC");let t=0;const iv=setInterval(()=>{t++;renderScene(rc,"room","joy",t)},140);
+  const beep=()=>{if(db.settings.sound)playSound(a.soundId)};beep();ringTimer=setInterval(beep,2200);
+  const end=()=>{clearInterval(iv);clearInterval(ringTimer);ringing=null;m.remove()};
+  m.querySelector("#rStop").onclick=()=>{end();save();render()};
+  m.querySelector("#rSnooze").onclick=()=>{a.snoozeUntil=nowMs()+5*60000;end();save();toast("Szundi: 5 perc múlva újra szólok 😴")};
+  try{if(Notification.permission==="granted")new Notification("Elenora ⏰ "+a.time,{body:text})}catch(e){}
+  if(navigator.vibrate)navigator.vibrate([300,150,300]);
+}
+
+/* ---------- 10. Ajándékok és emlékek ---------- */
+function renderGifts(){
+  const cnt={};db.gifts.forEach(g=>cnt[g.itemType]=(cnt[g.itemType]||0)+1);
+  $("#giftGrid").innerHTML=Object.entries(ITEMS).map(([k,it])=>`<div class="item"><img src="${iconURL(k)}" style="width:48px;height:48px;image-rendering:pixelated"><div>${it.n}</div><div class="n">${cnt[k]?cnt[k]+"× adva":"még nem adtad"}</div><button class="b" data-give="${k}">Adom!</button></div>`).join("");
+  $("#giftHist").innerHTML=db.gifts.length?db.gifts.slice().reverse().slice(0,12).map(g=>`<div class="ev"><div class="tm">${hhmm(g.givenAt)}</div><div class="grow"><div class="ti">${esc(g.itemName)}</div><div class="de">„${esc(g.reaction)}”</div><div class="muted">${dayLabel(g.givenAt)}</div></div></div>`).join(""):`<div class="muted">Még nem adtál ajándékot.</div>`;
+  $("#memList").innerHTML=db.memories.length?db.memories.slice().reverse().slice(0,8).map(m=>`<div class="ev"><div class="tm">${"★".repeat(Math.min(3,Math.ceil(m.importance/2)))}</div><div class="de grow">${esc(m.content)}</div></div>`).join(""):`<div class="muted">Elenora emlékei itt jelennek meg.</div>`;
+}
+function giveGift(k){
+  const it=ITEMS[k],st=db.state,t=nowMs();
+  db.gifts.push({id:nid(),itemType:k,itemName:it.n,givenAt:t,reaction:it.r});
+  for(const f in it.fx)st[f]+=it.fx[f];clampStats(st);
+  st.lastMsg={text:it.r,at:t};st.override={pose:it.pose,until:Date.now()+9000};
+  const ev={id:nid(),title:"Ajándék: "+it.n,description:"Kaptál tőle egy ajándékot: "+it.n+". Elenora így reagált: „"+it.r+"”",category:"tarsas",rarity:"c",createdAt:t,locationId:st.loc,participants:["Te"]};
+  db.events.push(ev);db.memories.push({id:nid(),content:"A felhasználó ajándékozott neki: "+it.n,type:"gift",importance:4,createdAt:t,relatedEventId:ev.id});
+  save();go("home");toast("Elenora: „"+it.r+"”",4500);
+}
+
+/* ---------- 11. Értesítések és beállítások ---------- */
+const NOTIF_GAP={ritka:6*3600e3,normal:2*3600e3,gyakori:40*60e3},NOTIF_P={ritka:.25,normal:.5,gyakori:.9};
+/* ---------- Natív réteg (Capacitor / Android) – böngészőben kikapcsolva ---------- */
+const LN=(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())?Capacitor.Plugins.LocalNotifications:null;
+const isNative=!!LN;
+let nativeReady=false,exactShown=false;
+async function nativeInit(){
+  if(!isNative||nativeReady)return;nativeReady=true;
+  try{
+    await LN.createChannel({id:"alarm",name:"Ébresztők",importance:5,vibration:true,visibility:1});
+    await LN.createChannel({id:"elenora",name:"Elenora üzenetei",importance:3,vibration:false});
+    await LN.registerActionTypes({types:[{id:"ALARM",actions:[{id:"snooze",title:"Szundi (5 perc)"}]}]});
+    LN.addListener("localNotificationActionPerformed",async ev=>{
+      const x=(ev.notification&&ev.notification.extra)||{};
+      if(ev.actionId==="snooze"&&x.kind==="alarm"){
+        await LN.schedule({notifications:[{id:900000+(Date.now()%90000),title:"Elenora ⏰ Szundi vége",body:ev.notification.body,channelId:"alarm",actionTypeId:"ALARM",extra:x,schedule:{at:new Date(Date.now()+5*60000),allowWhileIdle:true}}]});
+        toast("Szundi: 5 perc múlva újra szólok 😴");
+      }else if(x.kind==="alarm"){const a=db.alarms.find(a=>a.id==x.aid);if(a&&!ringing)ring(a)}
+    });
+  }catch(e){}
+}
+async function nativePerms(){
+  try{let p=await LN.checkPermissions();if(p.display!=="granted")p=await LN.requestPermissions();return p.display==="granted"}catch(e){return false}
+}
+async function exactCheck(){
+  if(exactShown)return;
+  try{const r=await LN.checkExactNotificationSetting();
+    if(r.exact_alarm&&r.exact_alarm!=="granted"){exactShown=true;
+      const m=modal(`<h3 style="margin-top:0;color:var(--gold)">Pontos ébresztés</h3><div class="note">Az Android 12+ rendszeren a pontos ébresztőhöz külön engedély kell („Ébresztők és emlékeztetők”). A következő képernyőn kapcsold be az Elenora mellett.</div><div class="btnrow"><button class="b alt" id="xNo">Később</button><button class="b" id="xYes">Megnyitom</button></div>`,true);
+      m.querySelector("#xNo").onclick=()=>m.remove();
+      m.querySelector("#xYes").onclick=()=>{m.remove();LN.changeExactNotificationSetting().catch(()=>{})};
+    }}catch(e){}
+}
+let syncBusy=false;
+async function syncNative(){
+  if(!isNative||syncBusy)return;syncBusy=true;
+  try{
+    await nativeInit();
+    const pend=await LN.getPending();
+    if(pend.notifications.length)await LN.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+    const wantAlarms=db.alarms.some(a=>a.enabled),wantMsgs=db.settings.notifOn;
+    if(!wantAlarms&&!wantMsgs)return;
+    if(!await nativePerms())return;
+    const list=[];
+    for(const a of db.alarms){
+      if(!a.enabled)continue;const[h,m]=a.time.split(":").map(Number);
+      const text=a.messageType==="custom"&&a.custom?a.custom:pick(ALARM_MSGS[a.messageType==="random"?"random":"morning"]);
+      const base={title:"Elenora ⏰ "+a.time,body:text,channelId:"alarm",actionTypeId:"ALARM",extra:{kind:"alarm",aid:a.id}};
+      if(a.repeatDays.length)a.repeatDays.forEach(d=>list.push({...base,id:a.id*10+d,schedule:{on:{weekday:((d+1)%7)+1,hour:h,minute:m},allowWhileIdle:true}}));
+      else{const at=new Date();at.setHours(h,m,0,0);if(at<=new Date())at.setDate(at.getDate()+1);list.push({...base,id:a.id*10,schedule:{at,allowWhileIdle:true}})}
+    }
+    if(wantMsgs){
+      const per={ritka:1,normal:3,gyakori:6}[db.settings.notif]||3,now=Date.now();
+      for(let day=0;day<3;day++)for(let i=0;i<per;i++){
+        const at=new Date();at.setDate(at.getDate()+day);at.setHours(8+Math.floor(Math.random()*13),Math.floor(Math.random()*60),0,0);
+        if(at.getTime()<now+5*60000)continue;
+        const a=weighted(ACTS,x=>x.rar==="c"&&!x.sleep?1:x.rar==="r"?.25:.05);
+        list.push({id:100000+day*10+i,title:"Elenora ♡",body:pick(a.msg),channelId:"elenora",schedule:{at,allowWhileIdle:false}});
+      }
+    }
+    if(list.length)await LN.schedule({notifications:list});
+    if(wantAlarms)exactCheck();
+  }catch(e){}finally{syncBusy=false}
+}
+function askNotifIfNeeded(){if(isNative){nativePerms().then(syncNative);return}try{if("Notification"in window&&Notification.permission==="default")Notification.requestPermission().then(()=>{})}catch(e){}}
+function maybeNotify(ev,live){
+  const s=db.settings,st=db.state;if(!live||!s.notifOn)return;
+  try{if(!("Notification"in window)||Notification.permission!=="granted")return}catch(e){return}
+  if(Date.now()-st.lastNotif<NOTIF_GAP[s.notif])return;
+  if(Math.random()>NOTIF_P[s.notif])return;
+  st.lastNotif=Date.now();
+  try{new Notification("Elenora ♡",{body:st.lastMsg.text,tag:"elenora"})}catch(e){}
+}
+function openSettings(){
+  const s=db.settings;
+  const m=modal(`<h3 style="margin-top:0;color:var(--gold)">⚙ Beállítások</h3>
+  <div class="card"><h3>Értesítések</h3>
+    <div class="set"><span>Értesítések engedélyezése</span><label class="sw"><input type="checkbox" id="sNotifOn" ${s.notifOn?"checked":""}><span></span></label></div>
+    <div class="set"><span>Gyakoriság</span><select id="sNotif" style="width:130px"><option value="ritka">Ritka</option><option value="normal">Normál</option><option value="gyakori">Gyakori</option></select></div>
+    <div class="note">${isNative?"Az értesítések az Android rendszer ütemezőjével érkeznek, akkor is, ha az app be van zárva. Minden megnyitáskor/bezáráskor újraütemeződnek a következő 3 napra.":"Böngészőben az értesítések csak az app megnyitott állapotában érkeznek. A telepített Android-appban a háttérben is működnek."}</div></div>
+  <div class="card"><h3>Kommunikáció</h3>
+    <div class="set"><span>Beszélgetés módja</span><select id="sChat" style="width:150px"><option value="offline">Offline</option><option value="ai">Online AI (opcionális)</option></select></div>
+    <label class="lbl">AI közvetítő szolgáltatás URL-je</label><input id="sEndpoint" placeholder="https://sajat-backend.pelda/elenora" value="${esc(s.aiEndpoint)}">
+    <div class="note">Az AI-kulcs soha nem kerül az appba: ide a saját backended címét írd, ami kulccsal hívja az AI-t és {"reply":"…"} választ ad. Ha nincs net vagy hiba van, automatikusan offline mód jön. Üresen hagyva marad az offline.</div></div>
+  <div class="card"><h3>Hang és megjelenés</h3>
+    <div class="set"><span>Hangok</span><label class="sw"><input type="checkbox" id="sSound" ${s.sound?"checked":""}><span></span></label></div>
+    <div class="set"><span>Hangerő</span><input type="range" id="sVol" min="0" max="1" step=".05" value="${s.volume}" style="width:150px"></div>
+    <div class="set"><span>Animációk</span><label class="sw"><input type="checkbox" id="sAnim" ${s.anim?"checked":""}><span></span></label></div>
+    <div class="set"><span>Ritka események</span><select id="sRare" style="width:130px"><option value="kevesebb">Kevesebb</option><option value="normal">Normál</option><option value="tobb">Több</option></select></div>
+    <div class="set"><span>Nyelv</span><select id="sLang" style="width:130px"><option value="hu">Magyar</option><option disabled>English (hamarosan)</option></select></div></div>
+  <div class="card"><h3>Adatok</h3>
+    <div class="note">Minden adat helyben, ezen az eszközön tárolódik (böngésző-tárhely), fiók nélkül.</div>
+    <div class="btnrow"><button class="b alt" id="sExport">⬇ Mentés fájlba</button><button class="b alt" id="sImport">⬆ Betöltés</button></div>
+    <input type="file" id="sFile" accept="application/json" style="display:none">
+    <button class="b alt" style="width:100%;margin-top:8px" disabled>☁ Felhőszinkron – hamarosan (előkészítve)</button>
+    <button class="b alt" style="width:100%;margin-top:8px" id="sWarp">⏩ Teszt: 8 óra „telik el” (szimuláció)</button>
+    <button class="b danger" style="width:100%;margin-top:8px" id="sReset">Összes adat törlése</button></div>
+  <button class="b" style="width:100%" id="sClose">Kész</button>`);
+  const $m=q=>m.querySelector(q);
+  $m("#sNotif").value=s.notif;$m("#sChat").value=s.chatMode;$m("#sRare").value=s.rareMul;
+  $m("#sNotifOn").onchange=e=>{s.notifOn=e.target.checked;save();if(s.notifOn){askNotifIfNeeded();if(!isNative&&!("Notification"in window))toast("Ez a böngésző nem támogat értesítéseket.")}else syncNative()};
+  $m("#sNotif").onchange=e=>{s.notif=e.target.value;save();syncNative()};
+  $m("#sChat").onchange=e=>{s.chatMode=e.target.value;save()};
+  $m("#sEndpoint").onchange=e=>{s.aiEndpoint=e.target.value.trim();save()};
+  $m("#sSound").onchange=e=>{s.sound=e.target.checked;save()};
+  $m("#sVol").oninput=e=>{s.volume=+e.target.value;save()};
+  $m("#sAnim").onchange=e=>{s.anim=e.target.checked;save()};
+  $m("#sRare").onchange=e=>{s.rareMul=e.target.value;save()};
+  $m("#sExport").onclick=async()=>{
+    const name="elenora-mentes-"+dayKey(Date.now())+".json";
+    if(isNative){try{const{Filesystem,Share}=Capacitor.Plugins;const r=await Filesystem.writeFile({path:name,data:JSON.stringify(db),directory:"CACHE",encoding:"utf8"});await Share.share({title:"Elenora mentés",url:r.uri})}catch(e){toast("A mentés megosztása nem sikerült.")}return}
+    const b=new Blob([JSON.stringify(db,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click()};
+  $m("#sImport").onclick=()=>$m("#sFile").click();
+  $m("#sFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||j.v!==1||!j.state)throw 0;db=j;save();location.reload()}catch(x){toast("Érvénytelen mentésfájl.")}};r.readAsText(f)};
+  $m("#sWarp").onclick=()=>{timeOffset+=8*3600e3;const made=simulate(nowMs(),false);m.remove();summary(made,8*3600e3);render()};
+  $m("#sReset").onclick=()=>{if(confirm("Biztosan törlöd az összes adatot? Elenora újrakezdi az életét.")){localStorage.removeItem(KEY);location.reload()}};
+  $m("#sClose").onclick=()=>{m.remove();render()};
+}
+function statusModal(){
+  const s=db.state,a=ACT[s.act.id];
+  modal(`<h3 style="margin-top:0;color:var(--gold)">✨ Elenora állapota</h3>${bars(true)}
+   <div class="note">Ezek játékbeli belső értékek, nem büntetés: ha sokáig nem nyitod meg az appot, Elenora akkor sem lesz szomorú vagy beteg – éli a saját kis életét.</div>
+   <div class="set"><span>Tevékenység</span><b>${a.label}</b></div>
+   <div class="set"><span>Helyszín</span><b>${LOCS[s.loc]}</b></div>
+   <div class="set"><span>Kezdete</span><b>${hhmm(s.act.start)}</b></div>
+   <div class="set"><span>Következő esemény</span><b>kb. ${hhmm(s.act.endsAt)}</b></div>
+   <div class="set"><span>Utolsó szimuláció</span><b>${ago(s.lastSim)}</b></div>
+   <button class="b" style="width:100%;margin-top:10px" onclick="closeModals()">Bezár</button>`);
+}
+function summary(made,elapsed){
+  if(!made.length)return;
+  const notable=made.slice().sort((a,b)=>"vrc".indexOf(a.rarity)-"vrc".indexOf(b.rarity)).slice(0,5);
+  const hrs=Math.round(elapsed/36e5);
+  modal(`<h3 style="margin-top:0;color:var(--gold)">Amíg távol voltál…</h3><div class="muted" style="margin-bottom:6px">Eltelt idő: ${hrs>=48?Math.round(hrs/24)+" nap":hrs+" óra"} · ${made.length} esemény történt</div>
+   ${notable.map(e=>`<div class="ev"><div class="tm">${hhmm(e.createdAt)}</div><div class="grow"><div class="ti">${esc(e.title)} <span class="tag ${e.rarity}">${RAR[e.rarity]}</span></div><div class="de">${esc(e.description)}</div></div></div>`).join("")}
+   <div class="btnrow" style="margin-top:10px"><button class="b alt" onclick="closeModals();go('journal')">📖 Napló</button><button class="b" onclick="closeModals()">Rendben</button></div>`,true);
+}
+
+/* ---------- 12. Indítás ---------- */
+function bind(){
+  document.addEventListener("click",e=>{
+    const t=e.target.closest("[data-go]");if(t){go(t.dataset.go);return}
+    const c=e.target.closest("[data-chip]");if(c){sendChat(c.dataset.chip);return}
+    const j=e.target.closest("[data-jf]");if(j){jFilter=j.dataset.jf;renderJournal();return}
+    const g=e.target.closest("[data-give]");if(g){giveGift(g.dataset.give);return}
+    const ed=e.target.closest("[data-edit]");if(ed){alarmForm(db.alarms.find(a=>a.id==ed.dataset.edit));return}
+  });
+  document.addEventListener("change",e=>{const t=e.target.closest("[data-tog]");if(t){const a=db.alarms.find(a=>a.id==t.dataset.tog);a.enabled=t.checked;save();syncNative()}});
+  $("#chatForm").onsubmit=e=>{e.preventDefault();const v=$("#chatIn").value;$("#chatIn").value="";sendChat(v)};
+  $("#btnSettings").onclick=openSettings;$("#btnStatus").onclick=statusModal;$("#newAlarm").onclick=()=>alarmForm();
+  document.addEventListener("visibilitychange",()=>{if(document.hidden)syncNative();else resume()});
+  window.addEventListener("online",()=>cur==="chat"&&renderChat());window.addEventListener("offline",()=>cur==="chat"&&renderChat());
+}
+function resume(){
+  const before=db.state.lastSim,now=nowMs(),made=simulate(now,false);
+  if(made.length&&now-before>10*60000)summary(made,now-before);
+  render();
+}
+function init(){
+  load();drawLogo();bind();
+  const first=!db.state.act;
+  const before=db.state.lastSim,now=nowMs();
+  if(db.state.lastSim>now)db.state.lastSim=now; // teszt-időeltolás után
+  const made=simulate(now,false);
+  go("home");
+  if(first)toast("Üdv! Elenora most költözött be – nézz vissza később is!",4500);
+  else if(made.length&&now-before>10*60000)summary(made,now-before);
+  db.state.lastOpen=now;save();
+  if(isNative){const n=document.querySelector("#s-alarm .note");if(n)n.textContent="✔ Az ébresztők az Android saját ébresztő-ütemezőjével szólalnak meg, akkor is, ha az app be van zárva vagy a telefon zárolva van. Android 12+ rendszeren a „Pontos ébresztés” engedélyt is meg kell adni.";syncNative()}
+  setInterval(()=>{const n=nowMs();const m=simulate(n,true);if(m.length&&cur==="home"&&!document.querySelector(".modal"))toast("Elenora: „"+db.state.lastMsg.text+"”",4000);if(cur==="home"||m.length)render();checkAlarms()},1000*5);
+  setInterval(checkAlarms,1000);
+  setInterval(()=>{if(cur==="home")render()},30000);
+  requestAnimationFrame(loop);
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "appId": "hu.elenora.app",
+  "appName": "Elenora",
+  "webDir": "www",
+  "backgroundColor": "#241A35",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#B99AE8"
+    }
+  }
+}
